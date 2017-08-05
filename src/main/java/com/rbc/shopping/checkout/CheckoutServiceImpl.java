@@ -12,6 +12,10 @@ import static java.math.BigDecimal.*;
 import static java.util.Objects.isNull;
 
 public class CheckoutServiceImpl implements CheckoutService {
+
+    private BiFunction<Map<String, Integer>, String, BigDecimal> calculatePrice =
+            (items, fruit) -> getPrice(fruit).multiply(valueOf(items.get(fruit)));
+
     @Override
     public BigDecimal generateBill(Basket basket) {
         validateBasket(basket);
@@ -21,16 +25,12 @@ public class CheckoutServiceImpl implements CheckoutService {
     private BigDecimal getBasketPrice(Map<String, Integer> items) {
         return items.keySet()
                 .stream()
-                .map(fruit -> calculatePrice().apply(items, fruit))
+                .map(fruit -> calculatePrice.apply(items, fruit))
                 .reduce(ZERO, BigDecimal::add);
     }
 
-    private BiFunction<Map<String, Integer>, String, BigDecimal> calculatePrice() {
-        return (items, fruit) -> getPrice(fruit).multiply(valueOf(items.get(fruit)));
-    }
-
     private static void validateBasket(Basket basket) {
-        if(isNull(basket.getItems())) {
+        if (isNull(basket.getItems())) {
             throw new InvalidBasketException("Invalid Basket");
         }
     }
